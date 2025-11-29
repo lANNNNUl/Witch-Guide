@@ -2,6 +2,7 @@
 #include <iostream>
 #include <windows.h>
 #include <vector>
+#include <limits>
 using namespace std;
 
 class mahou_shoujo
@@ -10,6 +11,7 @@ class mahou_shoujo
         string name;
         string address;
         vector<string>phonenumber;
+        string notes;
     public:
     
     string get_address() const
@@ -78,43 +80,57 @@ class mahou_shoujo
     return name == key;
 }
 
+    string read_notes() const
+    {
+        return notes;
+    }
+
+    void write_notes(const string& new_notes)
+    {
+        notes = new_notes;
+    }
+    
+    void delete_notes()
+    {
+        notes.clear();
+    }
 
 };
 
-vector<mahou_shoujo> mahou_shoujolist;
-
-void findmahou_shoujo()
-{
-    cout << "根据名字查找请输入1\n";
-    cout << "根据电话号码查找请输入2\n";
-    int user_choice;
-    cin >> user_choice;
-
-    if (user_choice == 1) {
-        cout << "请输入魔女姓名：\n";
-        string name;
-        cin >> name;
-
-        for (const auto& cp : mahou_shoujolist) {    
-            if (cp.ifmatchName(name)) {                  
-                cout << "用户名字：" << cp.get_name() << '\n';
-                cout << "用户地址：" << cp.get_address() << '\n';
-                cout << "用户电话：";
-                for (size_t i = 0; i < cp.get_phonenumber_amount(); ++i) {
-                    cout << cp.get_phonenumber(i);
-                    if (i + 1 < cp.get_phonenumber_amount()) cout << " | ";
-                }
-                cout << '\n';
-            }
+size_t getValidIntegerInput() {
+    int value;
+    while (true) {
+        std::cin >> value;
+        if (!std::cin) {
+            // 如果输入无效，清除错误状态并忽略错误输入
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cerr << "无效输入，请输入一个有效的数字。\n";
+        } else {
+            // 如果输入有效，返回该值
+            return value;
         }
     }
-    else if (user_choice == 2) {
-        string phonenumber_demo;
-        cout << "请输入魔女电话号码：\n";
-        cin >> phonenumber_demo;
-        
-    }
+}
 
+vector<mahou_shoujo> mahou_shoujolist;
+
+void show_all_mahou_shoujo()
+{
+    cout << "魔女列表：" << endl;
+    for (const auto& mahou_shoujo : mahou_shoujolist)
+    {
+        cout << "姓名: " << mahou_shoujo.get_name() << ", 地址: " << mahou_shoujo.get_address() << ", 电话号码: ";
+        for (size_t i = 0; i < mahou_shoujo.get_phonenumber_amount(); ++i)
+        {
+            cout << mahou_shoujo.get_phonenumber(i);
+            if (i + 1 < mahou_shoujo.get_phonenumber_amount()) cout << " | ";
+        }
+        if(mahou_shoujo.read_notes().empty()){
+            cout << ",备注: 无" << endl;
+        }else
+        cout << ",备注:" << mahou_shoujo.read_notes() << endl;
+    }
 }
 
 void modifymahou_shoujo()
@@ -127,11 +143,8 @@ void modifymahou_shoujo()
         const auto& cp = mahou_shoujolist[contactIdx];
         cout << contactIdx << ". " << cp.get_name() << '\n';
     }
-
     // 用户输入序号
-    size_t userChoice= -1;
-    //默认无效
-    cin >> userChoice;
+    size_t userChoice = getValidIntegerInput();
 
     while(true){
         if (userChoice >= mahou_shoujolist.size() )
@@ -140,9 +153,8 @@ void modifymahou_shoujo()
         return;
         }
         cout << "选择想要修改的信息:\n" ;
-        cout << "1.姓名 2.地址 3.电话号码 0.返回主界面\n" ;
-        size_t infoChoice = -1;
-        cin >> infoChoice;
+        cout << "1.姓名 2.地址 3.电话号码 4.备注 0.返回主界面\n" ;
+        size_t infoChoice = getValidIntegerInput();
         if(infoChoice == 0){
             break;
         }else if (infoChoice == 1)
@@ -176,9 +188,24 @@ void modifymahou_shoujo()
             else if (phoneChoice == 2)
             {
                 cout << "请输入要删除的电话号码索引(从0开始):\n";
-                size_t delIndex = -1;
-                cin >> delIndex;
+                size_t delIndex = getValidIntegerInput();
                 mahou_shoujolist[userChoice].delete_majophonenumber(delIndex);
+            }
+        }else if (infoChoice == 4)
+        {
+            cout << "当前备注内容为:\n" << mahou_shoujolist[userChoice].read_notes() << endl;
+            cout << "选择操作: 1.修改备注 2.删除备注\n";
+            size_t notesChoice = getValidIntegerInput();
+            if (notesChoice == 1)
+            {
+                string new_notes;
+                cout << "请输入新的备注内容:\n";
+                cin >> new_notes;
+                mahou_shoujolist[userChoice].write_notes(new_notes);
+            }
+            else if (notesChoice == 2)
+            {
+                mahou_shoujolist[userChoice].delete_notes();
             }
         }
         
@@ -188,18 +215,28 @@ void modifymahou_shoujo()
     cout << "魔女信息已更新。\n";
 }
 
-void addmahou_shoujo(){
-    string name,address,phonenumber;
-    cout << "请输入魔女姓名：" << endl;
-    cin >> name;
-    cout << "请输入魔女地址：" << endl;
-    cin >> address;
-    cout << "请输入魔女电话号码：" << endl;
-    cin >> phonenumber;
+void addmahou_shoujo() {
+    std::string name, address, phonenumber, notes;
+
+    std::cout << "请输入魔女姓名：" << std::endl;
+    std::cin >> name;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // 清空输入缓冲区
+
+    std::cout << "请输入魔女地址：" << std::endl;
+    std::getline(std::cin, address);
+
+    std::cout << "请输入魔女电话号码：" << std::endl;
+    std::getline(std::cin, phonenumber);
+
+    std::cout << "请输入魔女备注信息（可选，回车键跳过）：" << std::endl;
+    std::getline(std::cin, notes);
+
     mahou_shoujo contact_temp;
-    contact_temp.init_majo(name,address,phonenumber);
+    contact_temp.init_majo(name, address, phonenumber);
+    contact_temp.write_notes(notes);
     mahou_shoujolist.push_back(contact_temp);
-    cout << "魔女添加成功！" << endl;
+
+    std::cout << "魔女添加成功！" << std::endl;
 }
 
 void clearAllmahou_shoujo()
@@ -210,10 +247,6 @@ void clearAllmahou_shoujo()
 
 void showmenu()
 {
-    cout << endl;
-    cout << endl;
-    cout << endl;
-    cout << endl;
     cout << endl;
     cout << endl;
     cout << "**********************" << endl;
@@ -228,34 +261,41 @@ void showmenu()
     cout << "***********************" << endl;
 }
 
-void deletemahou_shoujo()
-{
-    cout << "输入想要删除的魔女序号:\n";
+void deletemahou_shoujo() {
+    while (true) {
+        std::cout << "输入想要删除的魔女序号:\n";
+        // 列出所有魔女（带序号）
+        for (size_t contactIdx = 0; contactIdx < mahou_shoujolist.size(); ++contactIdx) {
+            const auto& cp = mahou_shoujolist[contactIdx];
+            std::cout << contactIdx << ". " << cp.get_name() << '\n';
+        }
+        std::cout << "输入99999返回主界面\n";
 
-    // 列出所有魔女（带序号）
-    for (size_t contactIdx = 0; contactIdx < mahou_shoujolist.size(); ++contactIdx)
-    {
-        const auto& cp = mahou_shoujolist[contactIdx];
-        cout << contactIdx << ". " << cp.get_name() << '\n';
+        // 用户输入序号
+        int userChoice = getValidIntegerInput();
+
+        if (userChoice == 99999) {
+            std::cout << "返回主界面。\n";
+            break;
+        } else if (userChoice < 0 || static_cast<size_t>(userChoice) >= mahou_shoujolist.size()) {
+            std::cout << "无效的魔女序号！\n\n";
+            continue;
+        } else {
+            std::cout << "确定要删除该魔女吗？(y/n): ";
+            char confirm;
+            std::cin >> confirm;
+            if (confirm != 'y' && confirm != 'Y') {
+                std::cout << "删除操作已取消。\n";
+                continue;
+            } else {
+                mahou_shoujolist.erase(mahou_shoujolist.begin() + userChoice);
+                std::cout << "魔女已删除。\n";
+            }
+        }
     }
-
-    // 用户输入序号
-    size_t userChoice= -1;
-    //默认无效
-    cin >> userChoice;
-
-    if (userChoice >= mahou_shoujolist.size() )
-    {
-        cout << "无效的魔女序号！\n";
-        return;
-    }
-
-    // 删除所选魔女
-    mahou_shoujolist.erase(mahou_shoujolist.begin() + userChoice);
-    cout << "魔女已删除。\n";
 }
 
-void showmahou_shoujo()
+void findmahou_shoujo()
 {
     cout << "输入想要查询的魔女序号:\n";
 
@@ -267,9 +307,7 @@ void showmahou_shoujo()
     }
 
     // 用户输入序号
-    size_t userChoice= -1;
-    //默认无效
-    cin >> userChoice;
+    size_t userChoice = getValidIntegerInput();
 
     if (userChoice >= mahou_shoujolist.size())
     {
@@ -322,16 +360,17 @@ mahou_shoujolist.emplace_back(meruru);
 
 }
 
+
+
 int main()
 {   
     SetConsoleOutputCP(CP_UTF8);   // 输出 UTF-8
     SetConsoleCP(CP_UTF8); 
-    int select = 0;
     mahou_shoujoinit();
     while(true){
     showmenu();
-    cin >> select;
-    if (select == 0) {                          // 退出
+    size_t select = getValidIntegerInput();
+    if (select == 0) {                          // 0. 退出魔女图鉴
     cout << "欢迎下次再来。" << endl;
     return 0;
     }
@@ -339,7 +378,7 @@ int main()
     addmahou_shoujo();
     }
     else if (select == 2) {                     // 2. 显示魔女
-    showmahou_shoujo();
+    show_all_mahou_shoujo();
     }
     else if (select == 3) {                     // 3. 删除魔女
     deletemahou_shoujo();
@@ -353,8 +392,9 @@ int main()
     else if (select == 6) {                     // 6. 清空魔女
     clearAllmahou_shoujo();
     }
+    else{
+        cout << "无效的选择，请重新输入。" << endl;
     }
     
-    return 0;
-
+    }
 }
